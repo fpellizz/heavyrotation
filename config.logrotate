@@ -1,0 +1,24 @@
+# Logrotate file for Fusyon
+ 
+/opt/tomcat8/webapps/aquarius/log/*.log {
+#prerotate loses accounting records, let's no
+#    prerotate
+#       echo "Logrotate of aquarius webapp"
+#       mkdir -p /tmp/aquarius_logrotate
+#    endscript
+    compress
+    compresscmd /usr/bin/bzip2
+    compressext .bz2
+    copytruncate
+    missingok
+    notifempty
+#    daily
+    rotate 30
+#    size 1M
+    dateext
+    olddir /tmp/aquarius
+    nosharedscripts
+#    postrotate
+#       mv /tmp/aquarius_logrotate/*.* /mnt/mcbain/logrotate/aquarius
+#    endscript
+}
