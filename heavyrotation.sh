@@ -1,28 +1,71 @@
 #!/bin/bash
+##########################################################################################
+# HeavyRotation
+#
+# Script che utilizza logrotate di linux per effettuare un rotazione dei log di una webapp
+# deployata su un apache tomcat. I file vengono compressi e spostati su un filesystem 
+# remoto montato via nfs, quindi trasparente all'utente, ma non a logrotate, che si 
+# risente.
+# Il nome della cartella di backup viene generata dinamicamente, tramite la lettura
+# di alcune proprieta' da un file. 
+# 
+#
+#########################################################################################
+
+#########################################################################################
 #config section
-
+#
 timestamp=$(date +%Y%m%d-%H-%M-%S)
-build_info_path=/opt/tomcat8/webapps/aquarius
-build_info_file=build.info
-build_info=$build_info_path/$build_info_file
-
-build_codename=$(cat $build_info | grep decisyon.codename | cut -d'=' -f 2)
-build_version=$(cat $build_info | grep decisyon.version | cut -d'=' -f 2)
-build_metadata_version=$(cat $build_info | grep decisyon.metadata.version | cut -d'=' -f 2)
-build_short_version=$(cat $build_info | grep decisyon.short.version | cut -d'=' -f 2)
-build_number=$(cat $build_info | grep build.number | cut -d'=' -f 2)
-build_phase=$(cat $build_info | grep build.phase | cut -d'=' -f 2)
-build_revision=$(cat $build_info | grep build.svnrev | cut -d'=' -f 2)
-build_timestamp=$(cat $build_info | grep build.timestamp | cut -d'=' -f 2)
-
-
+#
+#################################################################
+# Path e Nome del file di properties che verranno usate nella
+# generazione del nome della cartella di backup dei logs
+#
+#property_file_path=/opt/tomcat8/webapps/aquarius
+property_file_path=.
+property_file_file=build.info
+property_file=$property_file_path/$property_file_file
+#
+#build_codename=$(cat $property_file | grep decisyon.codename | cut -d'=' -f 2)
+#build_version=$(cat $property_file | grep decisyon.version | cut -d'=' -f 2)
+#build_metadata_version=$(cat $property_file | grep decisyon.metadata.version | cut -d'=' -f 2)
+#build_short_version=$(cat $property_file | grep decisyon.short.version | cut -d'=' -f 2)
+#build_number=$(cat $property_file | grep build.number | cut -d'=' -f 2)
+#build_phase=$(cat $property_file | grep build.phase | cut -d'=' -f 2)
+#build_revision=$(cat $property_file | grep build.svnrev | cut -d'=' -f 2)
+#build_timestamp=$(cat $property_file | grep build.timestamp | cut -d'=' -f 2)
+#
+function get_properties () {
+    local property_value=$(cat $property_file | grep $1 | cut -d'=' -f 2)
+    echo "$property_value"    
+}
+#
+codename=$(get_properties decisyon.codename)
+version=$( get_properties decisyon.version )
+metadata_version=$( get_properties decisyon.metadata.version )
+short_version=$( get_properties decisyon.short.version )
+build_number=$( get_properties build.number )
+phase=$( get_properties build.phase )
+svnrev=$( get_properties build.svnrev )
+timestamp=$( get_properties build.timestamp )
+#
+#echo $property_file
+#echo $codename
+#echo $version
+#echo $metadata_version
+#echo $short_version
+#echo $build_number 
+#echo $phase
+#echo $svnrev
+#echo $timestamp
+#
 path_tmp=/tmp
 tmp_log_dir="$path_tmp/$build_codename"
 logrotate_status_path=/opt/update_aquarius/config
 logrotate_status_file=logrotate.status
 logrotate_config_path=/opt/update_aquarius/config
 logrotate_config_file=fusyon.logrotate
-
+#
 backup_log_home=/mnt/mcbain/logrotate/$build_codename
 backup_log_dir=$build_version-$build_number-$timestamp
 backup_log_path=$backup_log_home/$backup_log_dir
@@ -34,7 +77,7 @@ mkdir -p $tmp_log_dir
 touch $tmp_log_dir/dummy.log
 mkdir -p $backup_log_path
 logrotate -s $logrotate_status_path/$logrotate_status_file $logrotate_config_path/$logrotate_config_file
-#logrotate -f -s /tmp/logdummy.state $logrotate_config_path/$logrotate_config_file
 mv $tmp_log_dir/*.* $backup_log_path/
 rm -rf $tmp_log_dir
 rm -f $backup_log_path/dummy.log
+
