@@ -1,6 +1,39 @@
 #!/bin/bash
 #config section
 
+function check_system () {
+    #verify system requirements 
+    if [ -f /usr/sbin/logrotate ]
+    then
+        echo "logrotate binary ok"
+    else
+        echo "logrotate is not present on your system. Please install it"
+        exit 1
+    fi
+}
+
+
+function check_permission (){
+    if [ -r ./config/config.logrotate ]
+    then
+        echo "statuttapposto"
+    else
+        echo "Cannot read config file. Please verify if the config.logrotate exists inside the config dir, or check permissions"
+        exit 1
+    fi
+    
+        if [ -w ./config/status.logrotate ]
+    then
+        echo "statuttapposto"
+    else
+        echo "Cannot write status file. Please check persmission"
+        exit 1
+    fi
+}
+
+check_system
+check_permission
+
 timestamp=$(date +%Y%m%d-%H-%M-%S)
 build_info_path=/opt/tomcat8/webapps/aquarius
 build_info_file=build.info
