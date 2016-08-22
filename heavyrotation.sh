@@ -16,7 +16,7 @@ function check_system () {
 function check_permission (){
     if [ -r ./config/config.logrotate ]
     then
-        echo "statuttapposto"
+        echo "config file OK"
     else
         echo "Cannot read config file. Please verify if the config.logrotate exists inside the config dir, or check permissions"
         exit 1
@@ -24,7 +24,7 @@ function check_permission (){
     
         if [ -w ./config/status.logrotate ]
     then
-        echo "statuttapposto"
+        echo "status file OK"
     else
         echo "Cannot write status file. Please check persmission"
         exit 1
