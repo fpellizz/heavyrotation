@@ -12,9 +12,39 @@
 #
 #########################################################################################
 
-#########################################################################################
-#config section
-#
+function check_system () {
+    #verify system requirements 
+    if [ -f /usr/sbin/logrotate ]
+    then
+        echo "logrotate binary ok"
+    else
+        echo "logrotate is not present on your system. Please install it"
+        exit 1
+    fi
+}
+
+
+function check_permission (){
+    if [ -r ./config/config.logrotate ]
+    then
+        echo "config file OK"
+    else
+        echo "Cannot read config file. Please verify if the config.logrotate exists inside the config dir, or check permissions"
+        exit 1
+    fi
+    
+        if [ -w ./config/status.logrotate ]
+    then
+        echo "status file OK"
+    else
+        echo "Cannot write status file. Please check persmission"
+        exit 1
+    fi
+}
+
+check_system
+check_permission
+
 timestamp=$(date +%Y%m%d-%H-%M-%S)
 #
 #################################################################
@@ -65,7 +95,7 @@ logrotate_status_path=/opt/update_aquarius/config
 logrotate_status_file=logrotate.status
 logrotate_config_path=/opt/update_aquarius/config
 logrotate_config_file=fusyon.logrotate
-#
+
 backup_log_home=/mnt/mcbain/logrotate/$build_codename
 backup_log_dir=$build_version-$build_number-$timestamp
 backup_log_path=$backup_log_home/$backup_log_dir
@@ -80,4 +110,3 @@ logrotate -s $logrotate_status_path/$logrotate_status_file $logrotate_config_pat
 mv $tmp_log_dir/*.* $backup_log_path/
 rm -rf $tmp_log_dir
 rm -f $backup_log_path/dummy.log
-
